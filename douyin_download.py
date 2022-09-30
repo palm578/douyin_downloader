@@ -194,6 +194,7 @@ class DouyinDownloader:
                         f.write(chunk)
             print("%s is downloaded ok\n" % video_file_name)
             f.close()
+            
             return True
         except Exception as e:
             print("failed to download video (url=", video_url, ")")
@@ -308,13 +309,14 @@ class DouyinDownloader:
         user_id = '{0}_{1}'.format(user_id, user_name)
         self.download_specified_videos(video_list, user_id)
         self.download_specified_notes(note_list, user_id)
-        self.web_browser.close_browser_tab()
 
     # Download a group of users, in list format
     def download_user_data(self, input_str_list):
         user_num = len(input_str_list)
-        # print("download user_i = %d/%d", 1, user_num)
-        # self.download_specified_user_data(input_str_list[1])
-        for user_i in range(user_num):
-            print("download user_i = %d/%d", user_i, user_num)
-            self.download_specified_user_data(input_str_list[user_i])
+        try:
+            for user_i in range(user_num):
+                print("download user_i = %d/%d", user_i, user_num)
+                self.download_specified_user_data(input_str_list[user_i])
+            self.web_browser.close_browser_tab()
+        except Exception as e:
+            print(e)
