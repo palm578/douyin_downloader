@@ -21,7 +21,7 @@ DouyinDownloader类中也有下载特定视频的函数，有需要的可自行�
 
 三、注意事项
 
-1、程序为使用python3编写，需自行安装所需依赖包selenium、bs4、re、json、requests等
+1、程序为使用python3编写（测试版本3.8），需自行安装所需依赖包selenium、bs4、re、json、requests等
 
 2、需要安装chrome浏览器，并将对应版本的chromedriver放到当前目录
 
