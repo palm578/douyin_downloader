@@ -1,0 +1,5 @@
+{
+    "driver_path": "./chromedriver",
+    "data_path": "download",
+    "married":   true
+}
