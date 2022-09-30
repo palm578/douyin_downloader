@@ -313,8 +313,8 @@ class DouyinDownloader:
     # Download a group of users, in list format
     def download_user_data(self, input_str_list):
         user_num = len(input_str_list)
-        print("download user_i = %d/%d", 1, user_num)
-        self.download_specified_user_data(input_str_list[1])
-        # for user_i in range(user_num):
-        #     print("download user_i = %d/%d", user_i, user_num)
-        #     self.download_specified_user_data(input_str_list[user_i])
+        # print("download user_i = %d/%d", 1, user_num)
+        # self.download_specified_user_data(input_str_list[1])
+        for user_i in range(user_num):
+            print("download user_i = %d/%d", user_i, user_num)
+            self.download_specified_user_data(input_str_list[user_i])
