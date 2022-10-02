@@ -139,7 +139,8 @@ class DouyinDownloader:
         video_title_pattern = r'<title>(.*?) - 抖音</title>'
         video_title_str = re.findall(video_title_pattern, soup_data)
         if len(video_title_str) == 0:
-            print("title not found: ", soup_data)
+            print("title not found")
+            # print("title not found: ", soup_data)
             return real_video_url, ''
             # print('real_video_url: %s', real_video_url)
         # print('video title: %s', video_title_str)
@@ -214,6 +215,9 @@ class DouyinDownloader:
         # video_num = 1  # For test ...
         for i in range(video_num):
             video_url, video_title = self.get_real_video_url_from_videopage(video_list[i], user_id)
+            if video_url == '':
+                print('video url not found or note in video url!')
+                continue
             # file_name = "{0}/{1}.mp4".format(user_data_path, video_list[i])
             file_name = "{0}/{1}.mp4".format(user_data_path, '{0}_{1}'.format(video_list[i], video_title))
             self.download_video_stream(video_url, file_name)
