@@ -194,7 +194,6 @@ class DouyinDownloader:
                         f.write(chunk)
             print("%s is downloaded ok\n" % video_file_name)
             f.close()
-            
             return True
         except Exception as e:
             print("failed to download video (url=", video_url, ")")
@@ -286,8 +285,12 @@ class DouyinDownloader:
         user_name = re.findall(user_name_pattern, str_data)
         if len(user_name) == 0:
             print(str_data)
-        # print('user_name: ', user_name[0])
-        return user_name[0]
+            true_user_name = 'NameNotFound'
+        else:
+            # print('user_name: ', user_name[0])
+            true_user_name0 = user_name[0].strip()
+            true_user_name = re.sub(r"[\/\\\:\*\?\"\<\>\|]", "", true_user_name0)
+        return true_user_name
 
     def get_user_data_list(self, user_url):
         # Open the user url web page
@@ -302,11 +305,35 @@ class DouyinDownloader:
         note_list = self.get_note_list_from_string(page_source)
         return video_list, note_list, user_name
 
+    def filter_out_exist_list(self, in_video_list, in_note_list, user_id):
+        user_data_path = './{0}/{1}'.format(self.data_path, user_id)
+        print(user_data_path)
+        if not os.path.exists(user_data_path):  # have not downloaded this user data yet
+            out_video_list = in_video_list
+            out_note_list = in_note_list
+        else:
+            dir_files = os.listdir(user_data_path)
+            downloaded_list = []
+            for dir_file in dir_files:
+                tmp_data = dir_file.split('_')
+                downloaded_list.append(tmp_data[0])
+            not_downloaded_video_list = list(set(in_video_list)-set(downloaded_list))
+            not_downloaded_note_list = list(set(in_note_list) - set(downloaded_list))
+            out_video_list = not_downloaded_video_list
+            out_note_list = not_downloaded_note_list
+            # print('in_video_list: ', in_video_list)
+            # print('in_note_list: ', in_note_list)
+            # print('downloaded_list: ', downloaded_list)
+            print('not_downloaded_video_list: ', not_downloaded_video_list)
+            print('not_downloaded_note_list: ', not_downloaded_note_list)
+        return out_video_list, out_note_list
+
     # Download specific user data (both video and notes)
     def download_specified_user_data(self, input_str):
         user_url, user_id = self.get_user_url_and_user_id(input_str)
         video_list, note_list, user_name = self.get_user_data_list(user_url)
         user_id = '{0}_{1}'.format(user_id, user_name)
+        video_list, note_list = self.filter_out_exist_list(video_list, note_list, user_id)
         self.download_specified_videos(video_list, user_id)
         self.download_specified_notes(note_list, user_id)
 
