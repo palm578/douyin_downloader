@@ -1,7 +1,7 @@
 # Batch download tools for Douyin videos and pictures
 # @author  palm.wang@hotmail.com
 # version 1.0, 2022.09.28 : basic user video and picture download function
-# version 1.1, 2022.10.03 : 1) data download update, 2) try more than once to fetch notes 
+# version 1.1, 2022.10.03 : 1) data download update, 2) try more than once to fetch notes
 
 import random
 import time
@@ -368,6 +368,7 @@ class DouyinDownloader:
             for user_i in range(user_num):
                 print("download user_i = %d/%d", user_i, user_num)
                 self.download_specified_user_data(input_str_list[user_i])
+                time.sleep(random.random() * 3)
             self.web_browser.close_browser_tab()
         except Exception as e:
             print(e)
