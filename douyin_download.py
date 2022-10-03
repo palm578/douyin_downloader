@@ -1,6 +1,7 @@
 # Batch download tools for Douyin videos and pictures
 # @author  palm.wang@hotmail.com
 # version 1.0, 2022.09.28 : basic user video and picture download function
+# version 1.1, 2022.10.03 : 1) data download update, 2) try more than once to fetch notes 
 
 import random
 import time
@@ -50,9 +51,10 @@ class WebBrowser:
         try:
             self.browser.find_element("class name", item_class).click()
             # self.browser.find_element(By.CLASS_NAME, item_class).click()
-        except Exception as e:
+        # except Exception as e:
+        except:
             print('There is no class name: %s', item_class)
-            print(e)
+            # print(e)
 
     # scroll the page to the end, to load the full page
     def scroll_the_page_to_the_end(self):
@@ -95,6 +97,7 @@ class DouyinDownloader:
     def __init__(self, driver_path, data_path, browser_silent=False):
         self.web_browser = WebBrowser(driver_path, browser_silent)
         self.data_path = data_path
+        self.max_try_cnt = 5
 
     # Find the video id from the input string
     def get_video_list_from_string(self, str_data):
@@ -167,7 +170,7 @@ class DouyinDownloader:
         # time.sleep(2)
         # self.web_browser.close_nonsense_window_by_class('dy-account-close')
         soup_data = str(BeautifulSoup(page_source1, 'html.parser'))
-        print(soup_data)
+        # print(soup_data)
         real_note_url_pattern = r'<img class="V5BLJkWV" src="(.*?)"'
         real_note_url_strs = re.findall(real_note_url_pattern, soup_data)
         real_note_urls = []
@@ -176,6 +179,9 @@ class DouyinDownloader:
             temp_url = str(real_note_url_strs[i]).replace('&amp;', '&')
             real_note_urls.append(temp_url)
         print('real_note_urls: ', real_note_urls)
+        # if len(real_note_urls) == 0:
+        #     print(soup_data)
+        #     exit(0)
         return real_note_urls
 
     # download one video stream
@@ -214,7 +220,14 @@ class DouyinDownloader:
         video_num = len(video_list)
         # video_num = 1  # For test ...
         for i in range(video_num):
-            video_url, video_title = self.get_real_video_url_from_videopage(video_list[i], user_id)
+            video_url = []
+            for try_i in range(self.max_try_cnt):  # Try to get the url (it maybe fail, try max_try_cnt)
+                print('try_i: ', try_i)
+                video_url, video_title = self.get_real_video_url_from_videopage(video_list[i], user_id)
+                if len(video_url) > 0:  #
+                    break
+                else:
+                    time.sleep(random.random() * 2)
             if video_url == '':
                 print('video url not found or note in video url!')
                 continue
@@ -245,7 +258,14 @@ class DouyinDownloader:
         # Download the notes
         note_num = len(note_list)
         for i in range(note_num):
-            note_urls = self.get_real_note_urls_from_notepage(note_list[i])
+            note_urls = []
+            for try_i in range(self.max_try_cnt):  # Try to get the url (it maybe fail, try max_try_cnt)
+                print('try_i: ', try_i)
+                note_urls = self.get_real_note_urls_from_notepage(note_list[i])
+                if len(note_urls) > 0:  #
+                    break
+                else:
+                    time.sleep(random.random() * 2)
             for j in range(len(note_urls)):
                 file_name = "{0}/{1}_{2}.webp".format(user_data_path, note_list[i], j)
                 self.download_image(note_urls[j], file_name)
@@ -293,7 +313,7 @@ class DouyinDownloader:
         else:
             # print('user_name: ', user_name[0])
             true_user_name0 = user_name[0].strip()
-            true_user_name = re.sub(r"[\/\\\:\*\?\"\<\>\|]", "", true_user_name0)
+            true_user_name = re.sub(r"[\/\\\:\*\?\"\<\>\|\.]", "", true_user_name0)
         return true_user_name
 
     def get_user_data_list(self, user_url):
@@ -328,8 +348,8 @@ class DouyinDownloader:
             # print('in_video_list: ', in_video_list)
             # print('in_note_list: ', in_note_list)
             # print('downloaded_list: ', downloaded_list)
-            print('not_downloaded_video_list: ', not_downloaded_video_list)
-            print('not_downloaded_note_list: ', not_downloaded_note_list)
+            print('not_downloaded_video_list[{0}]:{1}'.format(len(not_downloaded_video_list), not_downloaded_video_list))
+            print('not_downloaded_note_list[{0}]:{1}'.format(len(not_downloaded_note_list), not_downloaded_note_list))
         return out_video_list, out_note_list
 
     # Download specific user data (both video and notes)
