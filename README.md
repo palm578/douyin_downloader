@@ -44,4 +44,5 @@ DouyinDownloader类中也有下载特定视频的函数，有需要的可自行�
 五、后续完善工作
 
 1、解决部分情况下图片或视频不能下载的问题，实现稳定下载。目前通过多次retry实现，多数情况下可以解决。
+
 2、抖音的这种格式的用户页面 https://v.douyin.com/(user_id) ，user_id不唯一，如 https://v.douyin.com/67PUYbc/ 和 https://v.douyin.com/67PxFxtz 指向同一个用户;相同用户不同时刻获取的user_id不同，并且相近时刻获得的多个用户的user_id相近。暂不清楚原理，感觉在动态分配。后续可能要用转向的这个格式的网址：https://www.douyin.com/user/MS4wLjABAAAAeeO77c3knyeN7D2RD6f9YbcGXl2-RRvcHluTiLwWmt8LsRaaeICfEdkwgdwYwpP_
