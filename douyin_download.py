@@ -135,8 +135,10 @@ class DouyinDownloader:
             # print(soup_data)
             print('parse notes in video page...')
             user_data_path = './{0}/{1}'.format(self.data_path, user_id)
-            self.download_note_in_video_page(soup_data, user_data_path, video_id)
-            return '', ''
+            num_note = self.download_note_in_video_page(soup_data, user_data_path, video_id)
+            if num_note > 0:
+                ret_str = 'NoteInVideoPage'
+            return '', ret_str
         real_video_url = 'https://www.douyin.com/aweme/v1/play/' + real_video_url_str[0]
         # find the video title
         video_title_pattern = r'<title>(.*?) - 抖音</title>'
@@ -162,6 +164,7 @@ class DouyinDownloader:
             file_name = "{0}/{1}_{2}.webp".format(user_data_path, video_id, j)
             self.download_image(real_note_urls[j], file_name)
             time.sleep(random.random() * 1)
+        return len(real_note_urls)
 
     # Get the real notes url from note page
     def get_real_note_urls_from_notepage(self, note_id):
@@ -225,6 +228,9 @@ class DouyinDownloader:
                 print('try_i: ', try_i)
                 video_url, video_title = self.get_real_video_url_from_videopage(video_list[i], user_id)
                 if len(video_url) > 0:  #
+                    break
+                elif video_title == 'NoteInVideoPage':
+                    print('download note in video page')
                     break
                 else:
                     time.sleep(random.random() * 2)
@@ -368,7 +374,7 @@ class DouyinDownloader:
             for user_i in range(user_num):
                 print("download user_i = %d/%d", user_i, user_num)
                 self.download_specified_user_data(input_str_list[user_i])
-                time.sleep(random.random() * 3)
+                time.sleep(random.random() * 5)
             self.web_browser.close_browser_tab()
         except Exception as e:
             print(e)
