@@ -138,6 +138,8 @@ class DouyinDownloader:
             num_note = self.download_note_in_video_page(soup_data, user_data_path, video_id)
             if num_note > 0:
                 ret_str = 'NoteInVideoPage'
+            else:
+                ret_str = ''
             return '', ret_str
         real_video_url = 'https://www.douyin.com/aweme/v1/play/' + real_video_url_str[0]
         # find the video title
@@ -238,7 +240,8 @@ class DouyinDownloader:
                 print('video url not found or note in video url!')
                 continue
             # file_name = "{0}/{1}.mp4".format(user_data_path, video_list[i])
-            file_name = "{0}/{1}.mp4".format(user_data_path, '{0}_{1}'.format(video_list[i], video_title))
+            video_title1 = re.sub(r"[\/\\\:\*\?\"\<\>\|]", "", video_title)
+            file_name = "{0}/{1}.mp4".format(user_data_path, '{0}_{1}'.format(video_list[i], video_title1))
             self.download_video_stream(video_url, file_name)
             time.sleep(random.random()*3)
 
