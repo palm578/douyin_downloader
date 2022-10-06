@@ -122,7 +122,7 @@ class DouyinDownloader:
         return note_list
 
     # Get the real video url from video page
-    def get_real_video_url_from_videopage(self, video_id, user_id=''):
+    def get_real_video_url_from_videopage(self, video_id, user_data_path):
         video_url = "https://www.douyin.com/video/{0}".format(video_id)
         page_source1 = self.web_browser.get_main_page_source(video_url)
         # time.sleep(2)
@@ -134,7 +134,7 @@ class DouyinDownloader:
             # This is a note page
             # print(soup_data)
             print('parse notes in video page...')
-            user_data_path = './{0}/{1}'.format(self.data_path, user_id)
+            # user_data_path = './{0}/{1}'.format(self.data_path, user_id)
             num_note = self.download_note_in_video_page(soup_data, user_data_path, video_id)
             if num_note > 0:
                 ret_str = 'NoteInVideoPage'
@@ -172,7 +172,7 @@ class DouyinDownloader:
     def get_real_note_urls_from_notepage(self, note_id):
         note_url = "https://www.douyin.com/video/{0}".format(note_id)
         page_source1 = self.web_browser.get_main_page_source(note_url)
-        # time.sleep(2)
+        time.sleep(1)
         # self.web_browser.close_nonsense_window_by_class('dy-account-close')
         soup_data = str(BeautifulSoup(page_source1, 'html.parser'))
         # print(soup_data)
@@ -213,14 +213,7 @@ class DouyinDownloader:
             return False
 
     # Download the specified video_list
-    def download_specified_videos(self, video_list, user_id=''):
-        # if no user_id is set, set it to be 'general'
-        if user_id == '':
-            user_id = 'general'
-        # check if the path exist, and mkdir if not exist
-        user_data_path = './{0}/{1}'.format(self.data_path, user_id)
-        if not os.path.exists(user_data_path):
-            os.makedirs(user_data_path)
+    def download_specified_videos(self, video_list, user_data_path):
         # Download the videos
         video_num = len(video_list)
         # video_num = 1  # For test ...
@@ -228,7 +221,7 @@ class DouyinDownloader:
             video_url = []
             for try_i in range(self.max_try_cnt):  # Try to get the url (it maybe fail, try max_try_cnt)
                 print('try_i: ', try_i)
-                video_url, video_title = self.get_real_video_url_from_videopage(video_list[i], user_id)
+                video_url, video_title = self.get_real_video_url_from_videopage(video_list[i], user_data_path)
                 if len(video_url) > 0:  #
                     break
                 elif video_title == 'NoteInVideoPage':
@@ -256,14 +249,7 @@ class DouyinDownloader:
             f.write(response.content)
 
     # Download the specified note_list
-    def download_specified_notes(self, note_list, user_id=''):
-        # if no user_id is set, set it to be 'general'
-        if user_id == '':
-            user_id = 'general'
-        # check if the path exist, and mkdir if not exist
-        user_data_path = './{0}/{1}'.format(self.data_path, user_id)
-        if not os.path.exists(user_data_path):
-            os.makedirs(user_data_path)
+    def download_specified_notes(self, note_list, user_data_path):
         # Download the notes
         note_num = len(note_list)
         for i in range(note_num):
@@ -339,11 +325,13 @@ class DouyinDownloader:
         return video_list, note_list, user_name
 
     def filter_out_exist_list(self, in_video_list, in_note_list, user_id):
-        user_data_path = './{0}/{1}'.format(self.data_path, user_id)
+        # user_data_path = './{0}/{1}'.format(self.data_path, user_id)
+        user_data_path, ret_user_id = self.set_download_file_path(user_id)
         print(user_data_path)
         if not os.path.exists(user_data_path):  # have not downloaded this user data yet
             out_video_list = in_video_list
             out_note_list = in_note_list
+            os.makedirs(user_data_path)
         else:
             dir_files = os.listdir(user_data_path)
             downloaded_list = []
@@ -359,16 +347,46 @@ class DouyinDownloader:
             # print('downloaded_list: ', downloaded_list)
             print('not_downloaded_video_list[{0}]:{1}'.format(len(not_downloaded_video_list), not_downloaded_video_list))
             print('not_downloaded_note_list[{0}]:{1}'.format(len(not_downloaded_note_list), not_downloaded_note_list))
-        return out_video_list, out_note_list
+        return out_video_list, out_note_list, user_data_path, ret_user_id
+
+    def set_download_file_path(self, user_id):
+        ret_user_id = user_id
+        # if no user_id is set, set it to be 'general'
+        if user_id == '':
+            user_id = 'general'
+        # check if the path exist, and mkdir if not exist
+        tmp_user_data_path = './{0}/{1}'.format(self.data_path, user_id)
+        tmp_data = user_id.split('_')
+        tmp_num = len(tmp_data)
+        if tmp_num >= 2:
+            douyin_id = tmp_data[tmp_num-1]
+            id_folder_list = []
+            for file_folder in os.listdir('./{0}'.format(self.data_path)):
+                if file_folder.endswith('_{0}'.format(douyin_id)):
+                    id_folder_list.append(file_folder)
+            print(id_folder_list)
+            if len(id_folder_list) > 0:
+                ret_user_id = id_folder_list[0]
+                user_data_path = './{0}/{1}'.format(self.data_path, id_folder_list[0])
+                print('user already exists: ', user_id, id_folder_list)
+            else:
+                user_data_path = tmp_user_data_path
+                print('new user: ', user_id)
+        else:
+            user_data_path = tmp_user_data_path
+            print('wrong user_id format: ', user_id)
+        # print(user_data_path)
+        return user_data_path, ret_user_id
+
 
     # Download specific user data (both video and notes)
     def download_specified_user_data(self, input_str):
         user_url, user_id = self.get_user_url_and_user_id(input_str)
         video_list, note_list, user_name = self.get_user_data_list(user_url)
         user_id = '{0}_{1}'.format(user_id, user_name)
-        video_list, note_list = self.filter_out_exist_list(video_list, note_list, user_id)
-        self.download_specified_videos(video_list, user_id)
-        self.download_specified_notes(note_list, user_id)
+        video_list, note_list, user_data_path, user_id = self.filter_out_exist_list(video_list, note_list, user_id)
+        self.download_specified_videos(video_list, user_data_path)
+        self.download_specified_notes(note_list, user_data_path)
 
     # Download a group of users, in list format
     def download_user_data(self, input_str_list):
