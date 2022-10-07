@@ -11,10 +11,12 @@ class ProgramConfiguration:
                 self.data_path = data['data_path']
                 self.driver_path = data['driver_path']
                 self.browser_silent = data['browser_silent']
+                self.max_try_times = data['max_try_times']
         except Exception as e:
             self.data_path = 'download'
             self.driver_path = './chromedriver'  # path of 'chromedriver'
             self.browser_silent = False  # Set to True, if you want to run chrome under background
+            self.max_try_times = 10
             print(e)
 
 
@@ -40,7 +42,6 @@ if __name__ == '__main__':
         user_urls = user_url_data.split("\n")
     if len(user_urls):
         print(user_urls)
-        douyin_downloader.download_user_data(user_urls)
-
+        douyin_downloader.download_user_data(user_urls, prog_config.max_try_times)
 
 
