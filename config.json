@@ -2,4 +2,5 @@
     "driver_path": "./chromedriver",
     "data_path": "download",
     "married":   true
+    "max_try_times":  100
 }
