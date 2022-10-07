@@ -305,6 +305,7 @@ class DouyinDownloader:
         if len(user_name) == 0:
             print(str_data)
             true_user_name = 'NameNotFound'
+            raise Exception("User Name not found, maybe u are downloading files too frequently!")
         else:
             # print('user_name: ', user_name[0])
             true_user_name0 = user_name[0].strip()
@@ -359,7 +360,10 @@ class DouyinDownloader:
         tmp_data = user_id.split('_')
         tmp_num = len(tmp_data)
         if tmp_num >= 2:
-            douyin_id = tmp_data[tmp_num-1]
+            douyin_id = tmp_data[1]
+            for mm in range(2, tmp_num-1):
+                douyin_id = douyin_id+tmp_data[mm]
+            # douyin_id = tmp_data[tmp_num-1]
             id_folder_list = []
             for file_folder in os.listdir('./{0}'.format(self.data_path)):
                 if file_folder.endswith('_{0}'.format(douyin_id)):
@@ -389,13 +393,21 @@ class DouyinDownloader:
         self.download_specified_notes(note_list, user_data_path)
 
     # Download a group of users, in list format
-    def download_user_data(self, input_str_list):
+    def download_user_data(self, input_str_list, max_try_times):
         user_num = len(input_str_list)
-        try:
-            for user_i in range(user_num):
-                print("download user_i = %d/%d", user_i, user_num)
-                self.download_specified_user_data(input_str_list[user_i])
-                time.sleep(random.random() * 5)
-            self.web_browser.close_browser_tab()
-        except Exception as e:
-            print(e)
+        exception_user_i = 0
+        # Try max_try_times Exceptions
+        for try_i in range(max_try_times):
+            print("\n\n\n************* Try times: ", try_i, "******************\n")
+            try:
+                user_i_start = exception_user_i
+                for user_i in range(user_i_start, user_num):
+                    exception_user_i = user_i
+                    print("download user_i = %d/%d", user_i, user_num)
+                    self.download_specified_user_data(input_str_list[user_i])
+                    time.sleep(random.random() * 5)
+                self.web_browser.close_browser_tab()
+                break
+            except Exception as e:
+                time.sleep(60+random.random()*30)
+                print(e)
