@@ -10,17 +10,20 @@ from selenium import webdriver
 from bs4 import BeautifulSoup
 import requests
 import os
+import numpy as np
+import json
 
 
 # General web browser using selenium and chrome
 class WebBrowser:
     def __init__(self, driver_path, silent=False):
-        chrome_options = webdriver.ChromeOptions()
+        self.chrome_options = webdriver.ChromeOptions()
+        self.driver_path = driver_path
         if silent:   # set Chrome to run under background
-            chrome_options.add_argument('--headless')
-            chrome_options.add_argument('--disable-gpu')
+            self.chrome_options.add_argument('--headless')
+            self.chrome_options.add_argument('--disable-gpu')
         # Open Chrome browser
-        self.browser = webdriver.Chrome(executable_path=driver_path, options=chrome_options)
+        self.browser = webdriver.Chrome(executable_path=self.driver_path, options=self.chrome_options)
 
     # Close browser Tab
     def close_browser_tab(self):
@@ -29,6 +32,12 @@ class WebBrowser:
     # Quit browser, close the full window
     def close_entire_browser(self):
         self.browser.quit()
+
+    # Quit and reopen the browser
+    def reopen_browser(self):
+        self.browser.quit()
+        # Open Chrome browser
+        self.browser = webdriver.Chrome(executable_path=self.driver_path, options=self.chrome_options)
 
     # Get page source of the specific url using browser
     # Attention: the dynamic webpage cannot be acquired with requests.get(url)
@@ -98,6 +107,7 @@ class DouyinDownloader:
         self.web_browser = WebBrowser(driver_path, browser_silent)
         self.data_path = data_path
         self.max_try_cnt = 5
+        self.last_index_file = 'start_user_index.json'
 
     # Find the video id from the input string
     def get_video_list_from_string(self, str_data):
@@ -392,10 +402,39 @@ class DouyinDownloader:
         self.download_specified_videos(video_list, user_data_path)
         self.download_specified_notes(note_list, user_data_path)
 
+    # load last downloading user index from the stored start_user_index.json
+    def load_last_downloading_user_index(self, user_num):
+        try:
+            with open(self.last_index_file, "r") as fh:
+                data = json.load(fh)
+                start_index = int(data['start_user_index'])
+                total_len = int(data['total_user_number'])
+                # the user number in user_url_list.txt has changed, reset the start index to 0
+                if total_len != '' and total_len != user_num:
+                    start_index = 0
+        except Exception as e:
+            print(e)
+            start_index = 0
+            total_len = 0
+        return start_index
+
+    # save last downloading user index to the stored start_user_index.json
+    def save_last_downloading_user_index(self, user_index, user_num):
+        dict_v = {
+            "start_user_index": str(user_index),
+            "total_user_number": str(user_num)
+        }
+        try:
+            with open(self.last_index_file, "w") as fh:
+                json.dump(dict_v, fh, indent=4)
+        except Exception as e:
+            print(e)
+
     # Download a group of users, in list format
     def download_user_data(self, input_str_list, max_try_times):
         user_num = len(input_str_list)
-        exception_user_i = 0
+        exception_user_i = self.load_last_downloading_user_index(user_num)
+        print('start user index: ', exception_user_i)
         # Try max_try_times Exceptions
         for try_i in range(max_try_times):
             print("\n\n\n************* Try times: ", try_i, "******************\n")
@@ -403,11 +442,12 @@ class DouyinDownloader:
                 user_i_start = exception_user_i
                 for user_i in range(user_i_start, user_num):
                     exception_user_i = user_i
+                    self.save_last_downloading_user_index(user_i, user_num)
                     print("download user_i = %d/%d", user_i, user_num)
                     self.download_specified_user_data(input_str_list[user_i])
                     time.sleep(random.random() * 5)
-                self.web_browser.close_browser_tab()
                 break
             except Exception as e:
+                self.web_browser.reopen_browser()
                 time.sleep(60+random.random()*30)
                 print(e)
