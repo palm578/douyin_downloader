@@ -2,6 +2,7 @@
 # @author  palm.wang@hotmail.com
 # version 1.0, 2022.09.28 : basic user video and picture download function
 # version 1.1, 2022.10.03 : 1) data download update, 2) try more than once to fetch notes
+# 2022.10.30：fix a bug, when user url like this: https://www.douyin.com/user/MS4wLjABAAAAeeO77c3knyeN7D2RD6f9YbcGXl2-RRvcHluTiLwWmt8LsRaaeICfEdkwgdwYwpP_
 
 import random
 import time
@@ -295,7 +296,7 @@ class DouyinDownloader:
         # Type2: https://www.douyin.com/user/MS4wLjABAAAAeeO77c3knyeN7D2RD6f9YbcGXl2-RRvcHluTiLwWmt8LsRaaeICfEdkwgdwYwpP_
         elif len(user_id02) > 0:
             user_id = user_id02[0]
-            user_url = 'https://www.douyin.com/user/{0}/'.format(user_id)
+            user_url = 'https://www.douyin.com/user/{0}'.format(user_id)
         else:
             if len(input_str) < 10:
                 user_id = input_str
@@ -397,6 +398,7 @@ class DouyinDownloader:
     def download_specified_user_data(self, input_str):
         user_url, user_id = self.get_user_url_and_user_id(input_str)
         video_list, note_list, user_name = self.get_user_data_list(user_url)
+        user_id = str(user_id).replace('_', '-')
         user_id = '{0}_{1}'.format(user_id, user_name)
         video_list, note_list, user_data_path, user_id = self.filter_out_exist_list(video_list, note_list, user_id)
         self.download_specified_videos(video_list, user_data_path)
