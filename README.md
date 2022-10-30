@@ -25,6 +25,10 @@ DouyinDownloader类中也有下载特定视频的函数，有需要的可自行�
 
 增加接续下载功能：在下载大量user的数据后，还是会出现验证码一直无法验证的问题。增加记录最后一次下载用户index的功能，可以手动停止后，继续从上一次下载到的用户开始接续下载。
 
+6.2022.10.30
+
+更正了一个使用“https://www.douyin.com/user/MS4wLjABAAAAeeO77c3knyeN7D2RD6f9YbcGXl2-RRvcHluTiLwWmt8LsRaaeICfEdkwgdwYwpP_”类型的下载地址会出现的bug
+
 二、使用方法
 
 1、从抖音用户主页点击分享后，选择复制链接
