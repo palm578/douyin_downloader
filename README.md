@@ -29,6 +29,10 @@ DouyinDownloader类中也有下载特定视频的函数，有需要的可自行�
 
 更正了一个使用“https://www.douyin.com/user/MS4wLjABAAAAeeO77c3knyeN7D2RD6f9YbcGXl2-RRvcHluTiLwWmt8LsRaaeICfEdkwgdwYwpP_”类型的下载地址会出现的bug
 
+7.2023.04.05
+
+抖音对selenium的访问进行了限制，需要进行手动验证。尝试了另外打开chrome进行remote连接，以及stealth.min.js两种方式均未解决；目前暂时增加了30秒延时。用户需要在30秒内手动进行验证，后面可以正常运行。
+
 二、使用方法
 
 1、从抖音用户主页点击分享后，选择复制链接
@@ -39,7 +43,7 @@ DouyinDownloader类中也有下载特定视频的函数，有需要的可自行�
 
 
 三、注意事项
-
+ 
 1、程序为使用python3编写（测试版本3.8），需自行安装所需依赖包selenium、bs4、re、json、requests等
 
 2、需要安装chrome浏览器，并将对应版本的chromedriver放到当前目录
@@ -61,3 +65,5 @@ DouyinDownloader类中也有下载特定视频的函数，有需要的可自行�
 1、解决部分情况下图片或视频不能下载的问题，实现稳定下载。目前通过多次retry实现，多数情况下可以解决。
 
 2、抖音的这种格式的用户页面 https://v.douyin.com/(user_id) ，user_id不唯一，如 https://v.douyin.com/67PUYbc/ 和 https://v.douyin.com/67PxFxtz 指向同一个用户;相同用户不同时刻获取的user_id不同，并且相近时刻获得的多个用户的user_id相近。暂不清楚原理，感觉在动态分配。后续可能要用转向的这个格式的网址：https://www.douyin.com/user/MS4wLjABAAAAkbkysgHQdweVnxzvTa423Csx3aWIlq5B3n1ApGRHBvA
+
+3、对seleninum的反爬虫验证机制的，反反爬虫手段？
