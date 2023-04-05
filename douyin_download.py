@@ -2,7 +2,7 @@
 # @author  palm.wang@hotmail.com
 # version 1.0, 2022.09.28 : basic user video and picture download function
 # version 1.1, 2022.10.03 : 1) data download update, 2) try more than once to fetch notes
-# 2022.10.30：fix a bug, when user url like this: https://www.douyin.com/user/MS4wLjABAAAAeeO77c3knyeN7D2RD6f9YbcGXl2-RRvcHluTiLwWmt8LsRaaeICfEdkwgdwYwpP_
+# version 1.1.1, 2023.04.05 : add some delay at start time, u should handcheck the douyin page, then to continue
 
 import random
 import time
@@ -14,17 +14,34 @@ import os
 import numpy as np
 import json
 
+import threading
+import subprocess
+
+# def start_chrome_exiplicit():
+#     cmd = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe --remote-debugging-port=9223 --user-data-dir='selenium_ChromeProfile'"
+#     subprocess.run(cmd)
+
 
 # General web browser using selenium and chrome
 class WebBrowser:
     def __init__(self, driver_path, silent=False):
+        # chrome_thread = threading.Thread(target=start_chrome_exiplicit)
+        # chrome_thread.start()
         self.chrome_options = webdriver.ChromeOptions()
+        # self.chrome_options.add_experimental_option("debuggerAddress", "127.0.0.1:9223")
+
         self.driver_path = driver_path
         if silent:   # set Chrome to run under background
             self.chrome_options.add_argument('--headless')
             self.chrome_options.add_argument('--disable-gpu')
         # Open Chrome browser
         self.browser = webdriver.Chrome(executable_path=self.driver_path, options=self.chrome_options)
+
+        # # added js code to avoid crawler detection @pw 20230405
+        # with open('./stealth.min.js') as f:
+        #     print('open js file OK')
+        #     js = f.read()
+        # self.browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {"source": js})
 
     # Close browser Tab
     def close_browser_tab(self):
@@ -42,9 +59,12 @@ class WebBrowser:
 
     # Get page source of the specific url using browser
     # Attention: the dynamic webpage cannot be acquired with requests.get(url)
-    def get_main_page_source(self, url):
+    def get_main_page_source(self, url, first_time_download=False):
         try:
             self.browser.get(url)
+            if first_time_download:
+                time.sleep(30)
+                # self.browser.get(url)
             return self.browser.page_source
         except Exception as e:
             print('Unable to open url: %s', url)
@@ -323,9 +343,9 @@ class DouyinDownloader:
             true_user_name = re.sub(r"[\/\\\:\*\?\"\<\>\|\.]", "", true_user_name0)
         return true_user_name
 
-    def get_user_data_list(self, user_url):
+    def get_user_data_list(self, user_url, first_time_download):
         # Open the user url web page
-        self.web_browser.get_main_page_source(user_url)
+        self.web_browser.get_main_page_source(user_url, first_time_download)
         # Click on the 'x' of the account dy-account window
         time.sleep(2)
         self.web_browser.close_nonsense_window_by_class('dy-account-close')
@@ -395,9 +415,9 @@ class DouyinDownloader:
 
 
     # Download specific user data (both video and notes)
-    def download_specified_user_data(self, input_str):
+    def download_specified_user_data(self, input_str, first_time_download):
         user_url, user_id = self.get_user_url_and_user_id(input_str)
-        video_list, note_list, user_name = self.get_user_data_list(user_url)
+        video_list, note_list, user_name = self.get_user_data_list(user_url, first_time_download)
         user_id = str(user_id).replace('_', '-')
         user_id = '{0}_{1}'.format(user_id, user_name)
         video_list, note_list, user_data_path, user_id = self.filter_out_exist_list(video_list, note_list, user_id)
@@ -436,6 +456,7 @@ class DouyinDownloader:
     def download_user_data(self, input_str_list, max_try_times):
         user_num = len(input_str_list)
         exception_user_i = self.load_last_downloading_user_index(user_num)
+        first_time_download = True
         print('start user index: ', exception_user_i)
         # Try max_try_times Exceptions
         for try_i in range(max_try_times):
@@ -446,7 +467,9 @@ class DouyinDownloader:
                     exception_user_i = user_i
                     self.save_last_downloading_user_index(user_i, user_num)
                     print("download user_i = %d/%d", user_i, user_num)
-                    self.download_specified_user_data(input_str_list[user_i])
+                    self.download_specified_user_data(input_str_list[user_i], first_time_download)
+                    if first_time_download:
+                        first_time_download = False
                     time.sleep(random.random() * 5)
                 break
             except Exception as e:
