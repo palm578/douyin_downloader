@@ -476,3 +476,4 @@ class DouyinDownloader:
                 self.web_browser.reopen_browser()
                 time.sleep(60+random.random()*30)
                 print(e)
+                exception_user_i = exception_user_i + 1   #skip one user, in some situation, the user id just disappeared.
