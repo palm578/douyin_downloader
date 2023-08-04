@@ -36,6 +36,12 @@ DouyinDownloader类中也有下载特定视频的函数，有需要的可自行�
 8.2023.04.18
 
 部分之前可以用的用户地址，一段时间后会变为用户不存在，针对此种情况，采取跳过该用户的方式。
+
+9.2023.07.29
+
+add the "execute_script" process after page has been loaded, to acquire the real web content, and to get the web address of video and picture. 解决部分情况下图片或视频不能下载的问题，实现稳定下载。
+
+
 二、使用方法
 
 1、从抖音用户主页点击分享后，选择复制链接
@@ -65,9 +71,7 @@ DouyinDownloader类中也有下载特定视频的函数，有需要的可自行�
 
 五、后续完善工作
 
-1、解决部分情况下图片或视频不能下载的问题，实现稳定下载。目前通过多次retry实现，多数情况下可以解决。
-
-2、抖音的这种格式的用户页面 https://v.douyin.com/(user_id) ，user_id不唯一，如 https://v.douyin.com/67PUYbc/ 和 https://v.douyin.com/67PxFxtz 指向同一个用户;相同用户不同时刻获取的user_id不同，并且相近时刻获得的多个用户的user_id相近。暂不清楚原理，感觉在动态分配。后续可能要用转向的这个格式的网址：https://www.douyin.com/user/MS4wLjABAAAAkbkysgHQdweVnxzvTa423Csx3aWIlq5B3n1ApGRHBvA
+1、抖音的这种格式的用户页面 https://v.douyin.com/(user_id) ，user_id不唯一，如 https://v.douyin.com/67PUYbc/ 和 https://v.douyin.com/67PxFxtz 指向同一个用户;相同用户不同时刻获取的user_id不同，并且相近时刻获得的多个用户的user_id相近。暂不清楚原理，感觉在动态分配。后续可能要用转向的这个格式的网址：https://www.douyin.com/user/MS4wLjABAAAAkbkysgHQdweVnxzvTa423Csx3aWIlq5B3n1ApGRHBvA
 
 3、对seleninum的反爬虫验证机制的，反反爬虫手段？
 
