@@ -3,6 +3,7 @@
 # version 1.0, 2022.09.28 : basic user video and picture download function
 # version 1.1, 2022.10.03 : 1) data download update, 2) try more than once to fetch notes
 # version 1.1.1, 2023.04.05 : add some delay at start time, u should handcheck the douyin page, then to continue
+# version 1.1.2, 2023.07.29 : add the "execute_script" process after page has been loaded, to acquire the real web content, and to get the web address of video and picture.
 
 import random
 import time
@@ -156,11 +157,16 @@ class DouyinDownloader:
     def get_real_video_url_from_videopage(self, video_id, user_data_path):
         video_url = "https://www.douyin.com/video/{0}".format(video_id)
         page_source1 = self.web_browser.get_main_page_source(video_url)
-        # time.sleep(2)
-        # self.web_browser.close_nonsense_window_by_class('dy-account-close')
-        soup_data = str(BeautifulSoup(page_source1, 'html.parser'))
+
+        # added @pw 20230729
+        time.sleep(2)
+        page_source2 = self.web_browser.browser.execute_script("return document.documentElement.innerHTML;")
+
+        soup_data = str(BeautifulSoup(page_source2, 'html.parser'))
         real_video_url_pattern = r'www.douyin.com/aweme/v1/play/(.*?)"'
         real_video_url_str = re.findall(real_video_url_pattern, soup_data)
+
+        # print(soup_data)  #For test 20230710
         if len(real_video_url_str) == 0:
             # This is a note page
             # print(soup_data)
@@ -174,7 +180,7 @@ class DouyinDownloader:
             return '', ret_str
         real_video_url = 'https://www.douyin.com/aweme/v1/play/' + real_video_url_str[0]
         # find the video title
-        video_title_pattern = r'<title>(.*?) - 抖音</title>'
+        video_title_pattern = r'<title>(.*?) - æŠ–éŸ³</title>'
         video_title_str = re.findall(video_title_pattern, soup_data)
         if len(video_title_str) == 0:
             print("title not found")
@@ -203,9 +209,12 @@ class DouyinDownloader:
     def get_real_note_urls_from_notepage(self, note_id):
         note_url = "https://www.douyin.com/video/{0}".format(note_id)
         page_source1 = self.web_browser.get_main_page_source(note_url)
-        time.sleep(1)
+
+        # added @pw 20230729
+        time.sleep(2)
+        page_source2 = self.web_browser.browser.execute_script("return document.documentElement.innerHTML;")
         # self.web_browser.close_nonsense_window_by_class('dy-account-close')
-        soup_data = str(BeautifulSoup(page_source1, 'html.parser'))
+        soup_data = str(BeautifulSoup(page_source2, 'html.parser'))
         # print(soup_data)
         real_note_url_pattern = r'<img class="V5BLJkWV" src="(.*?)"'
         real_note_url_strs = re.findall(real_note_url_pattern, soup_data)
@@ -259,7 +268,7 @@ class DouyinDownloader:
                     print('download note in video page')
                     break
                 else:
-                    time.sleep(random.random() * 2)
+                    time.sleep(random.random() * 8)
             if video_url == '':
                 print('video url not found or note in video url!')
                 continue
@@ -330,8 +339,8 @@ class DouyinDownloader:
     # get user_name from the input string
     def get_user_name_from_string(self, str_data):
         # print(str_data)
-        # str_data = '<span class="kbjj_psh">抖音号： Missingziyu</span><span class="WXnH80ht">IP属地：浙江</span></p>'
-        user_name_pattern = r'抖音号：(.*?)</span>'
+        # str_data = '<span class="kbjj_psh">æŠ–éŸ³å·ï¼š Missingziyu</span><span class="WXnH80ht">IPå±žåœ°ï¼šæµ™æ±Ÿ</span></p>'
+        user_name_pattern = r'æŠ–éŸ³å·ï¼š(.*?)</span>'
         user_name = re.findall(user_name_pattern, str_data)
         if len(user_name) == 0:
             print(str_data)
@@ -340,7 +349,8 @@ class DouyinDownloader:
         else:
             # print('user_name: ', user_name[0])
             true_user_name0 = user_name[0].strip()
-            true_user_name = re.sub(r"[\/\\\:\*\?\"\<\>\|\.]", "", true_user_name0)
+            true_user_name1 = re.sub(r"<!-- -->", "", true_user_name0)
+            true_user_name = re.sub(r"[\/\\\:\*\?\"\<\>\|\.]", "", true_user_name1)
         return true_user_name
 
     def get_user_data_list(self, user_url, first_time_download):
@@ -476,4 +486,5 @@ class DouyinDownloader:
                 self.web_browser.reopen_browser()
                 time.sleep(60+random.random()*30)
                 print(e)
-                exception_user_i = exception_user_i + 1   #skip one user, in some situation, the user id just disappeared.
+                exception_user_i = exception_user_i + 1
+
