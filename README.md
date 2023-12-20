@@ -43,8 +43,9 @@ add the "execute_script" process after page has been loaded, to acquire the real
 
 10. 2023.12.20
 
-抖音的图片格式的文件地址发生了改变，由<img class="V5BLJkWV"  ..> 变为 <img class="vtuVZlmn" ...>，因此代码进行相应的更改和升级。
+1)抖音的图片格式的文件地址发生了改变，由<img class="V5BLJkWV"  ..> 变为 <img class="vtuVZlmn" ...>，因此代码进行相应的更改和升级。
 
+2)增加对用户URL失效的处理，自动跳转到下一个用户
 
 二、使用方法
 
