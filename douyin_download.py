@@ -65,7 +65,7 @@ class WebBrowser:
         try:
             self.browser.get(url)
             if first_time_download:
-                time.sleep(30)
+                time.sleep(15)
                 # self.browser.get(url)
             return self.browser.page_source
         except Exception as e:
@@ -348,7 +348,12 @@ class DouyinDownloader:
         user_name_pattern = r'抖音号：(.*?)</span>'
         user_name = re.findall(user_name_pattern, str_data)
         if len(user_name) == 0:
-            print(str_data)
+            #print(str_data)
+            no_user_name_pattern = r'用户不存在'
+            no_user_name = re.findall(no_user_name_pattern, str_data)
+            if len(no_user_name) > 0:
+                true_user_name = 'UserNotExist'
+                raise Exception("User Not Exist!")
             true_user_name = 'NameNotFound'
             raise Exception("User Name not found, maybe u are downloading files too frequently!")
         else:
@@ -488,8 +493,10 @@ class DouyinDownloader:
                     time.sleep(random.random() * 5)
                 break
             except Exception as e:
+                if str(e) == 'User Not Exist!':
+                    print('User not exist, wrong user url address, or it is changed')
+                    exception_user_i = exception_user_i + 1
+                    continue
                 self.web_browser.reopen_browser()
                 time.sleep(60+random.random()*30)
                 print(e)
-                exception_user_i = exception_user_i + 1
-
