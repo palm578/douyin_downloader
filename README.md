@@ -41,6 +41,10 @@ DouyinDownloader类中也有下载特定视频的函数，有需要的可自行�
 
 add the "execute_script" process after page has been loaded, to acquire the real web content, and to get the web address of video and picture. 解决部分情况下图片或视频不能下载的问题，实现稳定下载。
 
+10. 2023.12.20
+
+抖音的图片格式的文件地址发生了改变，由<img class="V5BLJkWV"  src=...> 变为 <img class="vtuVZlmn" src=...>，因此代码进行相应的更改和升级。
+
 
 二、使用方法
 
