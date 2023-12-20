@@ -4,6 +4,7 @@
 # version 1.1, 2022.10.03 : 1) data download update, 2) try more than once to fetch notes
 # version 1.1.1, 2023.04.05 : add some delay at start time, u should handcheck the douyin page, then to continue
 # version 1.1.2, 2023.07.29 : add the "execute_script" process after page has been loaded, to acquire the real web content, and to get the web address of video and picture.
+# version 1.1.3, 2023.12.20 : update the "image" download address format, according to the change of douyin
 
 import random
 import time
@@ -180,7 +181,7 @@ class DouyinDownloader:
             return '', ret_str
         real_video_url = 'https://www.douyin.com/aweme/v1/play/' + real_video_url_str[0]
         # find the video title
-        video_title_pattern = r'<title>(.*?) - æŠ–éŸ³</title>'
+        video_title_pattern = r'<title>(.*?) - 抖音</title>'
         video_title_str = re.findall(video_title_pattern, soup_data)
         if len(video_title_str) == 0:
             print("title not found")
@@ -218,6 +219,10 @@ class DouyinDownloader:
         # print(soup_data)
         real_note_url_pattern = r'<img class="V5BLJkWV" src="(.*?)"'
         real_note_url_strs = re.findall(real_note_url_pattern, soup_data)
+        if len(real_note_url_strs) == 0:  # added @pw, 20231220, src addr changed
+            real_note_url_pattern = r'<img class="vtuVZlmn" src="(.*?)"'
+            real_note_url_strs = re.findall(real_note_url_pattern, soup_data)
+            print('====img src addr changed===')
         real_note_urls = []
         print(real_note_url_strs)
         for i in range(len(real_note_url_strs)):
@@ -268,7 +273,7 @@ class DouyinDownloader:
                     print('download note in video page')
                     break
                 else:
-                    time.sleep(random.random() * 8)
+                    time.sleep(15 + random.random() * 8)
             if video_url == '':
                 print('video url not found or note in video url!')
                 continue
@@ -339,8 +344,8 @@ class DouyinDownloader:
     # get user_name from the input string
     def get_user_name_from_string(self, str_data):
         # print(str_data)
-        # str_data = '<span class="kbjj_psh">æŠ–éŸ³å·ï¼š Missingziyu</span><span class="WXnH80ht">IPå±žåœ°ï¼šæµ™æ±Ÿ</span></p>'
-        user_name_pattern = r'æŠ–éŸ³å·ï¼š(.*?)</span>'
+        # str_data = '<span class="kbjj_psh">抖音号： Missingziyu</span><span class="WXnH80ht">IP属地：浙江</span></p>'
+        user_name_pattern = r'抖音号：(.*?)</span>'
         user_name = re.findall(user_name_pattern, str_data)
         if len(user_name) == 0:
             print(str_data)
