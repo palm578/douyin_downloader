@@ -5,6 +5,8 @@
 # version 1.1.1, 2023.04.05 : add some delay at start time, u should handcheck the douyin page, then to continue
 # version 1.1.2, 2023.07.29 : add the "execute_script" process after page has been loaded, to acquire the real web content, and to get the web address of video and picture.
 # version 1.1.3, 2023.12.20 : update the "image" download address format, according to the change of douyin
+# version 1.1.3.1, 2024.01.13 : reslove the problem of last update (only the first pic can be download in one note)
+
 
 import random
 import time
@@ -220,7 +222,8 @@ class DouyinDownloader:
         real_note_url_pattern = r'<img class="V5BLJkWV" src="(.*?)"'
         real_note_url_strs = re.findall(real_note_url_pattern, soup_data)
         if len(real_note_url_strs) == 0:  # added @pw, 20231220, src addr changed
-            real_note_url_pattern = r'<img class="vtuVZlmn" src="(.*?)"'
+            # real_note_url_pattern = r'<img class="vtuVZlmn" src="(.*?)"'
+            real_note_url_pattern = r'<img class="B1oL8jJO" src="(.*?)"'
             real_note_url_strs = re.findall(real_note_url_pattern, soup_data)
             print('====img src addr changed===')
         real_note_urls = []
